@@ -6,7 +6,8 @@ const deadlineSchema = new mongoose.Schema(
         "title": {type: String, required: true},
         "info": String,
         "date": { type: Date, default: Date.now()},
-        "severity": {type: Number, required: true, default: 3}
+        "severity": {type: Number, required: true, default: 3},
+        "completed": {type: Boolean, default: false}
     }
 );
 
