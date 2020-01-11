@@ -1,4 +1,5 @@
 const express = require("express");
+const uuidv4 = require("uuid/v4");
 const router = express.Router();
 
 //Models
@@ -17,19 +18,13 @@ function makeid() {
 
 // @route GET deadline/newlist
 // @desc  Create a new list
-router.get("/newlist", (req, res) => {
-    let newid = makeid();
-    List.findOne({"theid": newid})
+router.post("/getlist", (req, res) => {
+    List.findOne({"theid": req.body.listid})
         .then(foundlist => {
             if (foundlist) {
-                console.log("same list found! Shit!");
-                res.json({success: false});
+                res.json({success: true, foundlist});
             } else {
-                console.log("no same list! Great!");
-                const newList = new List({
-                    "theid": newid
-                });
-                newList.save().then(list => res.json({success: true, list}));
+                res.status(404).json({success: false, message: "List not found!"});
             }
         })
 });
@@ -37,11 +32,60 @@ router.get("/newlist", (req, res) => {
 // @route POST deadline/create
 // @desc  Create a new deadline, gets list id and deadline info
 router.post("/create", (req, res) => {
-    const newdeadline = new Deadline({
-        "title": req.body.title,
-        "info": req.body.info
-    });
-    List.findOneAndUpdate({"theid": req.body.listid}, {$push: {"objects": newdeadline}})
-        .then(() => res.json({success: true}));
-})
+    let searchId;
+    if (!req.body.listid) {
+        console.log("No listid given");
+        searchId = 0000000000;
+    } else {
+        searchId = req.body.listid;
+    }
+    List.findOne({"theid": searchId}, (err, thelist) => {
+        if (err) {
+            res.status(404).json({success: false, message: "Error with finding list"});
+        }
+        // No list found by id, create new list
+        if (!thelist) {
+            console.log("Let's create a new list!");
+            const newList = new List({
+                "theid": uuidv4()
+            });
+            newList.save().then(list => {
+                // Add new deadline to the list
+                list.updateOne({
+                    $push: {"objects": new Deadline({
+                        "number": list.next_id,
+                        "title": req.body.title,
+                        "info": req.body.info
+                    })},
+                    "next_id": list.next_id + 1
+                }, (err, raw) => {
+                    if (err) {
+                        res.status(404).json({success: false, message: "Error with updating list"});
+                    } else {
+                        res.json({success: true, message: "New list created with post", list});
+                    }
+                })
+            })
+        // List was found
+        } else {
+            console.log("Let's add to an existing list");
+            // Add new deadline to the list
+            thelist.updateOne({
+                $push: {"objects": new Deadline({
+                    "number": thelist.next_id,
+                    "title": req.body.title,
+                    "info": req.body.info
+                })},
+                "next_id": thelist.next_id + 1
+            }, (err, raw) => {
+                if (err) {
+                    res.status(404).json({success: false, message: "Error with updating list"});
+                } else {
+                    res.json({success: true, message: "New list created with post", thelist});
+                }
+            })
+        }
+    })
+});
+
 module.exports = router;

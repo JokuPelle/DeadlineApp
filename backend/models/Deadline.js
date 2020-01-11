@@ -7,14 +7,17 @@ const deadlineSchema = new mongoose.Schema(
         "info": String,
         "date": { type: Date, default: Date.now()},
         "severity": {type: Number, required: true, default: 3},
-        "completed": {type: Boolean, default: false}
+        "completed": {type: Boolean, default: false},
+        "x": { type: Number, default: 0.5 },
+        "y": { type: Number, default: 0.5 }
     }
 );
 
 const listSchema = new mongoose.Schema(
     {
         "theid": String,
-        "objects": [deadlineSchema]
+        "objects": [deadlineSchema],
+        "next_id": {type: Number, default: 0}
     }
 )
 
