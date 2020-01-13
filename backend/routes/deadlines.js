@@ -1,12 +1,13 @@
 const express = require("express");
 const uuidv4 = require("uuid/v4");
+const nodeMailer = require("nodemailer");
 const router = express.Router();
 
 //Models
 const List = require("../models/Deadline").list;
 const Deadline = require("../models/Deadline").deadline;
 
-function makeid() {
+/*function makeid() {
     let result = "";
     let bytes = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     let byteslength = bytes.length;
@@ -14,7 +15,46 @@ function makeid() {
         result += bytes.charAt(Math.floor(Math.random() * byteslength));
     }
     return result;
-}
+}*/
+
+/// @route GET deadline/sendemail
+// @desc  Send email
+router.post("/load", (req, res) => {
+    List.findOne({"theid": req.body.listid})
+        .then(foundlist => {
+            if (!foundlist) {
+                res.status(404).json({success: false, message: "No list found by id"});
+            } else {
+                res.json({success: true, message: "list found!", foundlist});
+            }
+        })
+})
+
+// @route GET deadline/sendemail
+// @desc  Send email
+router.post("/sendemail", (req, res) => {
+    let transporter = nodeMailer.createTransport({
+        host: "smtp.gmail.com",
+        port: 465,
+        secure: true,
+        auth: {
+            user: "pelle.apiservice@gmail.com",
+            pass: "clownworld"
+        }
+    });
+    let mailOptions = {
+        to: "jousimies2@gmail.com",
+        subject: "Test subject",
+        body: "Hello there guys"
+    };
+    transporter.sendMail(mailOptions, (err, info) => {
+        if (error) {
+            return console.log(error);
+        }
+        console.log("message %s sent: %s", info.messageId, info.response);
+    });
+    res.json({success: true, message: "message sent"});
+})
 
 // @route GET deadline/newlist
 // @desc  Create a new list
