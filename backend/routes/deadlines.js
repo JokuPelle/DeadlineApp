@@ -28,14 +28,14 @@ router.post("/sendemail", (req, res) => {
         port: 465,
         secure: true,
         auth: {
-            user: "pelle.apiservice@gmail.com",
-            pass: "password"
+            user: process.env.AUTH_USER,
+            pass: process.env.AUTH_PASS
         }
     });
     let mailOptions = {
-        to: "jousimies2@gmail.com",
+        to: req.body.email,
         subject: "Your list id",
-        body: `Hello there user!\n
+        text: `Hello there user!\n
         Your deadline list id is ${req.body.listid}\n
         You can also go to your list with this link:\n
         ${req.body.listid}`
