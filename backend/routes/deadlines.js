@@ -8,7 +8,7 @@ const List = require("../models/Deadline").list;
 const Deadline = require("../models/Deadline").deadline;
 
 // @route POST deadline/load
-// @desc  load list by id, maybe later through cookie
+// @desc  load list, maybe later through cookie, needs listid
 router.post("/load", (req, res) => {
     List.findOne({"theid": req.body.listid})
         .then(foundlist => {
@@ -21,7 +21,7 @@ router.post("/load", (req, res) => {
 })
 
 // @route POST deadline/sendemail
-// @desc  Send email
+// @desc  Send email, needs email, listid
 router.post("/sendemail", (req, res) => {
     let transporter = nodeMailer.createTransport({
         host: "smtp.gmail.com",
@@ -50,7 +50,7 @@ router.post("/sendemail", (req, res) => {
 })
 
 // @route POST deadline/create
-// @desc  Create a new deadline, gets list id and deadline info
+// @desc  Create a new deadline, needs listid, title, info, severity, date
 router.post("/create", (req, res) => {
     let searchId;
     if (!req.body.listid) {
