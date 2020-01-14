@@ -7,18 +7,8 @@ const router = express.Router();
 const List = require("../models/Deadline").list;
 const Deadline = require("../models/Deadline").deadline;
 
-/*function makeid() {
-    let result = "";
-    let bytes = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    let byteslength = bytes.length;
-    for (let i=0; i < 6; i++) {
-        result += bytes.charAt(Math.floor(Math.random() * byteslength));
-    }
-    return result;
-}*/
-
-/// @route GET deadline/sendemail
-// @desc  Send email
+// @route POST deadline/load
+// @desc  load list by id, maybe later through cookie
 router.post("/load", (req, res) => {
     List.findOne({"theid": req.body.listid})
         .then(foundlist => {
@@ -30,7 +20,7 @@ router.post("/load", (req, res) => {
         })
 })
 
-// @route GET deadline/sendemail
+// @route POST deadline/sendemail
 // @desc  Send email
 router.post("/sendemail", (req, res) => {
     let transporter = nodeMailer.createTransport({
@@ -39,13 +29,16 @@ router.post("/sendemail", (req, res) => {
         secure: true,
         auth: {
             user: "pelle.apiservice@gmail.com",
-            pass: "clownworld"
+            pass: "password"
         }
     });
     let mailOptions = {
         to: "jousimies2@gmail.com",
-        subject: "Test subject",
-        body: "Hello there guys"
+        subject: "Your list id",
+        body: `Hello there user!\n
+        Your deadline list id is ${req.body.listid}\n
+        You can also go to your list with this link:\n
+        ${req.body.listid}`
     };
     transporter.sendMail(mailOptions, (err, info) => {
         if (error) {
@@ -55,19 +48,6 @@ router.post("/sendemail", (req, res) => {
     });
     res.json({success: true, message: "message sent"});
 })
-
-// @route GET deadline/newlist
-// @desc  Create a new list
-router.post("/getlist", (req, res) => {
-    List.findOne({"theid": req.body.listid})
-        .then(foundlist => {
-            if (foundlist) {
-                res.json({success: true, foundlist});
-            } else {
-                res.status(404).json({success: false, message: "List not found!"});
-            }
-        })
-});
 
 // @route POST deadline/create
 // @desc  Create a new deadline, gets list id and deadline info
@@ -95,7 +75,8 @@ router.post("/create", (req, res) => {
                     $push: {"objects": new Deadline({
                         "number": list.next_id,
                         "title": req.body.title,
-                        "info": req.body.info
+                        "info": req.body.info,
+                        "severity": req.body.severity
                     })},
                     "next_id": list.next_id + 1
                 }, (err, raw) => {
@@ -121,7 +102,7 @@ router.post("/create", (req, res) => {
                 if (err) {
                     res.status(404).json({success: false, message: "Error with updating list"});
                 } else {
-                    res.json({success: true, message: "New list created with post", thelist});
+                    res.json({success: true, message: "List was updated"});
                 }
             })
         }
