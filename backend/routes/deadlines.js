@@ -7,6 +7,66 @@ const router = express.Router();
 const List = require("../models/Deadline").list;
 const Deadline = require("../models/Deadline").deadline;
 
+// @route POST deadline/delete
+// @desc  delete deadline
+router.post("/delete", (req, res) => {
+    List.updateOne({"theid": req.body.listid}, {
+        $pull: {
+            objects: { number: req.body.number }
+        }
+    }, (err) => {
+        if (err) {
+            console.log(err);
+            res.json({success: false, message: "couldnt delete"})
+        } else {
+            res.json({success: true, message: "deleted!"});
+        }
+    })
+})
+
+// @route POST deadline/update
+// @desc  update deadline
+router.post("/update", (req, res) => {
+    List.updateOne({"theid": req.body.listid, "objects.number": req.body.number}, {
+        $set: {
+            "objects.$.title": req.body.title,
+            "objects.$.info": req.body.info,
+            "objects.$.priority": req.body.priority,
+            "objects.$.date": req.body.date
+        }
+    }, (err) => {
+        if (err) {
+            console.log(err);
+            res.json({success: false, message: "couldnt update"})
+        } else {
+            res.json({success: true, message: "updated!"});
+        }
+    })
+})
+
+// @route POST deadline/newid
+// @desc  update a deadline
+router.post("/newid", (req, res) => {
+    List.findOne({"theid": req.body.listid})
+        .then(foundlist => {
+            if (!foundlist) {
+                res.status(404).json({success: false, message: "No list found by id"});
+            // Making a new id for list
+            } else {
+                const newid = uuidv4();
+                foundlist.updateOne({
+                    "theid": newid
+                }, (err, raw) => {
+                    if (err) {
+                        res.status(404).json({success: false, message: "Error with updating list id"});
+                    } else {
+                        res.json({success: true, message: "List id was updated", newId: newid});
+                    }
+                })
+            }
+        })
+})
+
 // @route POST deadline/load
 // @desc  load list, maybe later through cookie, needs listid
 router.post("/load", (req, res) => {
@@ -16,11 +76,10 @@ router.post("/load", (req, res) => {
                 res.status(404).json({success: false, message: "No list found by id"});
             } else {
                 if (req.body.sortbydate) {
-                    res.json({success: true, message: "list found!", listid: foundlist.theid, objects: foundlist.objects.sort(function(a, b){return(a.date - b.date)}).slice(0,3)});
+                    res.json({success: true, message: "list found!", listid: foundlist.theid, objects: foundlist.objects.sort(function(a, b){return(a.date - b.date)}).slice(0,20)});
                 } else {
-                    res.json({success: true, message: "list found!", listid: foundlist.theid, objects: foundlist.objects});
+                    res.json({success: true, message: "list found!", listid: foundlist.theid, objects: foundlist.objects.slice(0,20)});
                 }
-                //foundlist.objects.sort("number");
             }
         })
 })
@@ -43,7 +102,7 @@ router.post("/sendemail", (req, res) => {
         text: `Hello there user!\n
         Your deadline list id is ${req.body.listid}\n
         You can also go to your list with this link:\n
-        ${req.body.listid}`
+        ${req.body.url}${req.body.listid}`
     };
     transporter.sendMail(mailOptions, (err, info) => {
         if (error) {
