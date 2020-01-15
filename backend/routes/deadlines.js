@@ -8,7 +8,7 @@ const List = require("../models/Deadline").list;
 const Deadline = require("../models/Deadline").deadline;
 
 // @route POST deadline/delete
-// @desc  delete deadline
+// @desc  delete deadline, needs listid, number
 router.post("/delete", (req, res) => {
     List.updateOne({"theid": req.body.listid}, {
         $pull: {
@@ -24,8 +24,25 @@ router.post("/delete", (req, res) => {
     })
 })
 
+// @route POST deadline/complete
+// @desc  toggle deadline completion needs listid, completed, number
+router.post("/complete", (req, res) => {
+    List.updateOne({"theid": req.body.listid, "objects.number": req.body.number}, {
+        $set: {
+            "objects.$.completed": req.body.completed
+        }
+    }, (err) => {
+        if (err) {
+            console.log(err);
+            res.json({success: false, message: "couldnt change completion"})
+        } else {
+            res.json({success: true, message: "completed/uncompleted"});
+        }
+    })
+})
+
 // @route POST deadline/update
-// @desc  update deadline
+// @desc  update deadline, needs listid, number, title, info, priority, date
 router.post("/update", (req, res) => {
     List.updateOne({"theid": req.body.listid, "objects.number": req.body.number}, {
         $set: {
@@ -45,7 +62,7 @@ router.post("/update", (req, res) => {
 })
 
 // @route POST deadline/newid
-// @desc  update a deadline
+// @desc  create a new id for the list, needs listid
 router.post("/newid", (req, res) => {
     List.findOne({"theid": req.body.listid})
         .then(foundlist => {
