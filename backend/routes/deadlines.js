@@ -15,7 +15,12 @@ router.post("/load", (req, res) => {
             if (!foundlist) {
                 res.status(404).json({success: false, message: "No list found by id"});
             } else {
-                res.json({success: true, message: "list found!", foundlist});
+                if (req.body.sortbydate) {
+                    res.json({success: true, message: "list found!", listid: foundlist.theid, objects: foundlist.objects.sort(function(a, b){return(a.date - b.date)}).slice(0,3)});
+                } else {
+                    res.json({success: true, message: "list found!", listid: foundlist.theid, objects: foundlist.objects});
+                }
+                //foundlist.objects.sort("number");
             }
         })
 })
@@ -71,19 +76,21 @@ router.post("/create", (req, res) => {
             });
             newList.save().then(list => {
                 // Add new deadline to the list
+                console.log(req.body.priority);
                 list.updateOne({
                     $push: {"objects": new Deadline({
                         "number": list.next_id,
                         "title": req.body.title,
                         "info": req.body.info,
-                        "severity": req.body.severity
+                        "priority": req.body.priority,
+                        "date":req.body.date
                     })},
                     "next_id": list.next_id + 1
                 }, (err, raw) => {
                     if (err) {
                         res.status(404).json({success: false, message: "Error with updating list"});
                     } else {
-                        res.json({success: true, message: "New list created with post", list});
+                        res.json({success: true, message: "New list created with post", newId: newList.theid});
                     }
                 })
             })
@@ -95,7 +102,9 @@ router.post("/create", (req, res) => {
                 $push: {"objects": new Deadline({
                     "number": thelist.next_id,
                     "title": req.body.title,
-                    "info": req.body.info
+                    "info": req.body.info,
+                    "priority": req.body.priority,
+                    "date":req.body.date
                 })},
                 "next_id": thelist.next_id + 1
             }, (err, raw) => {
