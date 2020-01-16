@@ -7,6 +7,20 @@ const router = express.Router();
 const List = require("../models/Deadline").list;
 const Deadline = require("../models/Deadline").deadline;
 
+// @route POST deadline/verifyurl
+// @desc  verify listid given in url
+router.post("/verifyurl", (req, res) => {
+    List.findOne({"theid": req.body.urlid}, (err, foundlist) => {
+        if (err) {
+            res.status(500).json({success: false, message: "error in find"})
+        } else if (!foundlist) {
+            res.status(404).json({success: false, message: "couldnt find list"})
+        } else {
+            res.json({success: true, message: "id matched existing list"})
+        }
+    })
+})
+
 // @route POST deadline/delete
 // @desc  delete deadline, needs listid, number
 router.post("/delete", (req, res) => {
