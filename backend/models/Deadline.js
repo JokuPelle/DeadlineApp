@@ -8,8 +8,8 @@ const deadlineSchema = new mongoose.Schema(
         "date": { type: Date, default: Date.now()},
         "priority": { type: Number, default: 3},
         "completed": {type: Boolean, default: false},
-        "x": { type: Number, default: 50 },
-        "y": { type: Number, default: 50 }
+        "x": { type: Number, default: Math.random() },
+        "y": { type: Number, default: Math.random() }
     }
 );
 
