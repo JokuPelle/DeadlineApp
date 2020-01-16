@@ -129,7 +129,7 @@ router.post("/sendemail", (req, res) => {
         text: `Hello there!\n
         Your Quicklist list id is ${req.body.listid}\n
         You can either copy and paste this id to your login page or you can also login to your list with this link:\n
-        ${process.env.AUTH_URL}${req.body.listid}`
+        https://qlist.ddns.net/${req.body.listid}`
     };
     transporter.sendMail(mailOptions, (err, info) => {
         if (error) {
@@ -158,7 +158,7 @@ router.post("/create", (req, res) => {
         if (!thelist) {
             console.log("Let's create a new list!");
             const newList = new List({
-                "theid": uuidv4()
+                "theid": req.body.listid
             });
             newList.save().then(list => {
                 // Add new deadline to the list
