@@ -93,9 +93,19 @@ router.post("/load", (req, res) => {
                 res.status(404).json({success: false, message: "No list found by id"});
             } else {
                 if (req.body.sortbydate) {
-                    res.json({success: true, message: "list found!", listid: foundlist.theid, objects: foundlist.objects.sort(function(a, b){return(a.date - b.date)}).slice(0,20)});
+                    res.json({
+                        success: true,
+                        message: "list found!",
+                        listid: foundlist.theid,
+                        objects: foundlist.objects.sort(function(a, b){
+                            return(a.date - b.date)}).slice(0,20)});
                 } else {
-                    res.json({success: true, message: "list found!", listid: foundlist.theid, objects: foundlist.objects.slice(0,20)});
+                    res.json({
+                        success: true,
+                        message: "list found!",
+                        listid: foundlist.theid,
+                        objects: foundlist.objects.sort(function(a, b) {
+                            return(a.priority - b.priority)}).slice(0,20)});
                 }
             }
         })
@@ -152,7 +162,6 @@ router.post("/create", (req, res) => {
             });
             newList.save().then(list => {
                 // Add new deadline to the list
-                console.log(req.body.priority);
                 list.updateOne({
                     $push: {"objects": new Deadline({
                         "number": list.next_id,
