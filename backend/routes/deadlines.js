@@ -125,11 +125,11 @@ router.post("/sendemail", (req, res) => {
     });
     let mailOptions = {
         to: req.body.email,
-        subject: "Your list id",
-        text: `Hello there user!\n
-        Your deadline list id is ${req.body.listid}\n
-        You can also go to your list with this link:\n
-        ${req.body.url}${req.body.listid}`
+        subject: "Your QuickList id",
+        text: `Hello there!\n
+        Your Quicklist list id is ${req.body.listid}\n
+        You can either copy and paste this id to your login page or you can also login to your list with this link:\n
+        ${process.env.AUTH_URL}${req.body.listid}`
     };
     transporter.sendMail(mailOptions, (err, info) => {
         if (error) {
