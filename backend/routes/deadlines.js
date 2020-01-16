@@ -63,7 +63,9 @@ router.post("/update", (req, res) => {
             "objects.$.title": req.body.title,
             "objects.$.info": req.body.info,
             "objects.$.priority": req.body.priority,
-            "objects.$.date": req.body.date
+            "objects.$.date": req.body.date,
+            "objects.$.x": req.body.x,
+            "objects.$.y": req.body.y
         }
     }, (err) => {
         if (err) {
@@ -101,6 +103,8 @@ router.post("/newid", (req, res) => {
 // @route POST deadline/load
 // @desc  load list, maybe later through cookie, needs listid
 router.post("/load", (req, res) => {
+    let loadbatch = 0;
+    if (req.body.loadbatch) loadbatch = req.body.loadbatch;
     List.findOne({"theid": req.body.listid})
         .then(foundlist => {
             if (!foundlist) {
@@ -112,14 +116,14 @@ router.post("/load", (req, res) => {
                         message: "list found!",
                         listid: foundlist.theid,
                         objects: foundlist.objects.sort(function(a, b){
-                            return(a.date - b.date)}).slice(0,20)});
+                            return(a.date - b.date)}).slice(loadbatch,loadbatch+40)});
                 } else {
                     res.json({
                         success: true,
                         message: "list found!",
                         listid: foundlist.theid,
                         objects: foundlist.objects.sort(function(a, b) {
-                            return(a.priority - b.priority)}).slice(0,20)});
+                            return(a.priority - b.priority)}).slice(loadbatch,loadbatch+40)});
                 }
             }
         })
