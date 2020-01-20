@@ -132,6 +132,7 @@ router.post("/load", (req, res) => {
 // @route POST deadline/sendemail
 // @desc  Send email, needs email, listid
 router.post("/sendemail", (req, res) => {
+    console.log("lets send email");
     let transporter = nodeMailer.createTransport({
         host: "smtp.gmail.com",
         port: 465,
@@ -151,11 +152,13 @@ router.post("/sendemail", (req, res) => {
     };
     transporter.sendMail(mailOptions, (err, info) => {
         if (error) {
-            return console.log(error);
+            console.log(error);
+            res.status(404).json({success: false, message: "Failed to send message"});
+        } else {
+            console.log("message %s sent: %s", info.messageId, info.response);
+            res.json({success: true, message: "message sent"});
         }
-        console.log("message %s sent: %s", info.messageId, info.response);
     });
-    res.json({success: true, message: "message sent"});
 })
 
 // @route POST deadline/create
